@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "730987354561",
+    "project_id": "foodapp-ce408",
+    "storage_bucket": "foodapp-ce408.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:730987354561:android:b9e65996ed1ae41f923740",
+        "android_client_info": {
+          "package_name": "com.example.harvestbox_restaurant_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "730987354561-hkrnacuco223i8lkrbetflvonsbrevbv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.harvestbox_restaurant_app",
+            "certificate_hash": "bcc88bcd0945c4226bd6c31d19918053ce094783"
+          }
+        },
+        {
+          "client_id": "730987354561-j0leo2trm1j44p2ebkratbf1ije9vie9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHhIgi-d0jTohMlp_GZV6cEcLMPfOhX78"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "730987354561-j0leo2trm1j44p2ebkratbf1ije9vie9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "730987354561-ekiv0nraomtqu6b79gob0b6c031iuqu4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.harvestboxRestaurantApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
