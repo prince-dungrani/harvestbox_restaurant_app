@@ -64,7 +64,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const CartScreen()),
+                MaterialPageRoute(builder: (_) => const CartScreen(showBackButton: true)),
               );
             },
           ),
@@ -325,7 +325,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const CartScreen()),
+                      MaterialPageRoute(builder: (_) => const CartScreen(showBackButton: true)),
                     );
                   },
                   borderRadius: BorderRadius.circular(16),

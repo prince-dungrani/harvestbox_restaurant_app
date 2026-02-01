@@ -4,6 +4,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/social_login_button.dart';
 import '../services/google_auth_service.dart';
+import '../services/auth_service.dart';
 import 'signup_screen.dart';
 import 'location_screen.dart';
 
@@ -19,6 +20,60 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
+
+  Future<void> _handleEmailLogin() async {
+    // Validate input
+    if (_emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your email'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your password'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final user = await AuthService().signInWithEmailPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
+
+      if (user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LocationScreen()),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   Future<void> _handleGoogleLogin() async {
     setState(() => _isLoading = true);
@@ -147,12 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               CustomButton(
                 text: 'Sign In',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LocationScreen()),
-                  );
-                },
+                onPressed: _isLoading ? null : () => _handleEmailLogin(),
               ),
 
               const SizedBox(height: 32),

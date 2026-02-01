@@ -6,7 +6,7 @@ import '../widgets/food_item_card.dart';
 import '../widgets/filter_chip_widget.dart';
 import 'discover_screen.dart';
 import 'cart_screen.dart';
-import 'profile_screen.dart';
+import 'editable_profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? location;
@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _buildHomeContent(),
       const DiscoverScreen(),
       const CartScreen(),
-      const ProfileScreen(),
+      const EditableProfileScreen(),
     ];
   }
 

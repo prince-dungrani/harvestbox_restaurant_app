@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
-import 'screens/welcome_screen.dart';
+import 'screens/auth_wrapper.dart';
 import 'services/cart_service.dart';
 
 Future<void> main() async {
@@ -38,7 +38,8 @@ class MyApp extends StatelessWidget {
         title: 'HarvestBox',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.theme,
-        home: const WelcomeScreen(),
+        // Use AuthWrapper for session management
+        home: const AuthWrapper(),
       ),
     );
   }

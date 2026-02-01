@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../services/cart_service.dart';
+import '../services/profile_service.dart';
+import 'order_history_screen.dart';
+import 'home_screen.dart';
 
 class CartScreen extends StatelessWidget {
-  const CartScreen({super.key});
+  final bool showBackButton;
+  
+  const CartScreen({super.key, this.showBackButton = false});
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +21,13 @@ class CartScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: showBackButton
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
+        automaticallyImplyLeading: showBackButton,
         title: const Text(
           'My Cart',
           style: TextStyle(
@@ -90,7 +98,12 @@ class CartScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      // Just pop if this is a pushed screen, otherwise do nothing
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryGreen,
                       foregroundColor: Colors.white,
@@ -330,14 +343,7 @@ class CartScreen extends StatelessWidget {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Checkout functionality coming soon!'),
-                                  backgroundColor: AppTheme.primaryGreen,
-                                ),
-                              );
-                            },
+                            onPressed: () => _handleCheckout(context, cartService),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.primaryGreen,
                               foregroundColor: Colors.white,
@@ -379,6 +385,119 @@ class CartScreen extends StatelessWidget {
         color: AppTheme.primaryGreen,
         padding: EdgeInsets.zero,
         onPressed: onPressed,
+      ),
+    );
+  }
+
+  Future<void> _handleCheckout(BuildContext context, CartService cartService) async {
+    try {
+      // Get user profile to check for delivery address
+      final profileService = ProfileService();
+      final profile = await profileService.getCurrentUserProfile();
+      
+      String deliveryAddress;
+      
+      if (profile?.address == null || profile!.address!.isEmpty) {
+        // Show dialog to get delivery address
+        deliveryAddress = await _showAddressDialog(context) ?? '';
+        if (deliveryAddress.isEmpty) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Delivery address is required'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+      } else {
+        deliveryAddress = profile.address!;
+      }
+
+      // Show loading indicator
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      // Create order
+      final orderId = await cartService.checkout(deliveryAddress);
+
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+
+      if (orderId != null && context.mounted) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Order placed successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Navigate to order history
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (context.mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const OrderHistoryScreen()),
+          );
+        }
+      }
+    } catch (e) {
+      // Close loading dialog if open
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error placing order: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<String?> _showAddressDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delivery Address'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'Enter your delivery address',
+            border: OutlineInputBorder(),
+          ),
+          maxLines: 2,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryGreen,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Confirm'),
+          ),
+        ],
       ),
     );
   }

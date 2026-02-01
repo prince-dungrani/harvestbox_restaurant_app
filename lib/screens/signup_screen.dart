@@ -4,6 +4,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/social_login_button.dart';
 import '../services/google_auth_service.dart';
+import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'location_screen.dart';
 
@@ -19,6 +20,81 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+
+  Future<void> _handleEmailSignup() async {
+    // Validate input
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your name'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your email'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a password'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_passwordController.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password must be at least 6 characters'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final user = await AuthService().signUpWithEmailPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+        name: _nameController.text,
+      );
+
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
+
+      if (user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LocationScreen()),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   Future<void> _handleGoogleSignup() async {
     setState(() => _isLoading = true);
@@ -129,12 +205,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
               CustomButton(
                 text: 'Sign Up',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LocationScreen()),
-                  );
-                },
+                onPressed: _isLoading ? null : () => _handleEmailSignup(),
               ),
 
               const SizedBox(height: 28),
