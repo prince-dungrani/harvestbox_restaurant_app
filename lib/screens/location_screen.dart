@@ -26,11 +26,12 @@ class _LocationScreenState extends State<LocationScreen> {
 
       if (address != null && mounted) {
         // Navigate to home screen with location
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (_) => HomeScreen(location: address),
           ),
+          (route) => false,
         );
       } else if (mounted) {
         // Show error
@@ -56,11 +57,12 @@ class _LocationScreenState extends State<LocationScreen> {
 
   void _handleManualAddress() {
     if (_addressController.text.trim().isNotEmpty) {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (_) => HomeScreen(location: _addressController.text.trim()),
         ),
+        (route) => false,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -80,8 +82,10 @@ class _LocationScreenState extends State<LocationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+    return PopScope(
+      canPop: false, // Prevent back navigation during onboarding
+      child: Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(15.0),
@@ -253,6 +257,7 @@ class _LocationScreenState extends State<LocationScreen> {
           ),
         ),
       ),
+      ), // PopScope
     );
   }
 }

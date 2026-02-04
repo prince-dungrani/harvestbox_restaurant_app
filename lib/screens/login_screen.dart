@@ -56,9 +56,10 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = false);
 
       if (user != null) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LocationScreen()),
+          (route) => false, // Remove all previous routes
         );
       }
     } catch (e) {
@@ -86,9 +87,10 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = false);
 
       if (user != null) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LocationScreen()),
+          (route) => false, // Remove all previous routes
         );
       } else {
         // Show error if user cancelled or auth failed
@@ -115,15 +117,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false, // Prevent back navigation
+      child: Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textDark),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false, // Remove back button
         title: Text('Login', style: Theme.of(context).textTheme.titleLarge),
         centerTitle: true,
       ),
@@ -273,6 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+      ), // PopScope
     );
   }
 

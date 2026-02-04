@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../models/order.dart';
 import '../services/order_service.dart';
+import '../widgets/custom_back_button.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -41,9 +41,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
-  Future<void> _deleteOrder(String orderId) async {
+  Future<void> _cancelOrder(String orderId) async {
     try {
-      await _orderService.deleteOrder(orderId);
+      await _orderService.cancelOrder(orderId);
       await _loadOrders(); // Refresh list
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -69,9 +69,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textDark),
-          onPressed: () => Navigator.pop(context),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: CustomBackButton(
+            size: 40,
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
         title: const Text('Order History'),
         centerTitle: true,
@@ -156,7 +159,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             ) ??
             false;
       },
-      onDismissed: (direction) => _deleteOrder(order.id),
+      onDismissed: (direction) => _cancelOrder(order.id),
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),

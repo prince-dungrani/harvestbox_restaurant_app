@@ -111,6 +111,23 @@ class OrderService {
     }
   }
 
+  // CANCEL: Cancel an order (updates status to 'cancelled')
+  Future<void> cancelOrder(String orderId) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) throw Exception('User not authenticated');
+
+      await _database
+          .child('orders')
+          .child(userId)
+          .child(orderId)
+          .update({'status': 'cancelled'});
+    } catch (e) {
+      print('Error cancelling order: $e');
+      rethrow;
+    }
+  }
+
   // Stream of orders (real-time updates)
   Stream<List<Order>> ordersStream() {
     final userId = _auth.currentUser?.uid;

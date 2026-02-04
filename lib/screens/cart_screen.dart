@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../services/cart_service.dart';
 import '../services/profile_service.dart';
+import '../widgets/custom_back_button.dart';
 import 'order_history_screen.dart';
-import 'home_screen.dart';
 
 class CartScreen extends StatelessWidget {
   final bool showBackButton;
@@ -22,9 +22,12 @@ class CartScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: showBackButton
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Navigator.pop(context),
+            ? Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: CustomBackButton(
+                  size: 40,
+                  onPressed: () => Navigator.pop(context),
+                ),
               )
             : null,
         automaticallyImplyLeading: showBackButton,

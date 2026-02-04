@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_theme.dart';
 import '../services/google_auth_service.dart';
 import '../screens/welcome_screen.dart';
+import '../screens/order_history_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -163,7 +164,12 @@ class ProfileScreen extends StatelessWidget {
               _buildMenuItem(
                 icon: Icons.receipt,
                 title: 'Order History',
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const OrderHistoryScreen()),
+                  );
+                },
               ),
 
               _buildMenuItem(

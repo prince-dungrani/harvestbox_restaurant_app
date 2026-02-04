@@ -77,9 +77,10 @@ class _SignupScreenState extends State<SignupScreen> {
       setState(() => _isLoading = false);
 
       if (user != null) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LocationScreen()),
+          (route) => false,
         );
       }
     } catch (e) {
@@ -107,9 +108,10 @@ class _SignupScreenState extends State<SignupScreen> {
       setState(() => _isLoading = false);
 
       if (user != null) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LocationScreen()),
+          (route) => false,
         );
       } else {
         // Show error if user cancelled or auth failed
@@ -136,15 +138,14 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false, // Prevent back navigation
+      child: Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textDark),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false, // Remove back button
         title: Text(
           'Create Account',
           style: Theme.of(context).textTheme.titleLarge,
@@ -260,7 +261,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushReplacement(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const LoginScreen()),
                       );
@@ -290,6 +291,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ),
       ),
+      ), // PopScope
     );
   }
 

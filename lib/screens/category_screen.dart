@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
 import '../widgets/filter_chip_widget.dart';
+import '../widgets/custom_back_button.dart';
 import '../services/cart_service.dart';
 import 'cart_screen.dart';
 
@@ -41,9 +42,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: CustomBackButton(
+            size: 40,
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
         title: Text(
           widget.category,
