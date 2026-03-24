@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
+import '../services/menu_service.dart';
+import '../models/food_item.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/food_item_card.dart';
 import '../widgets/filter_chip_widget.dart';
 import 'discover_screen.dart';
 import 'cart_screen.dart';
 import 'editable_profile_screen.dart';
+import 'admin_panel_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? location;
@@ -21,6 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentNavIndex = 0;
   String _selectedCategory = 'Recommended';
   final List<String> _categories = MockData.getCategories();
+  final MenuService _menuService = MenuService();
+  bool _hasSeeded = false;
 
   // Screens for bottom navigation
   late final List<Widget> _screens;
@@ -34,6 +39,15 @@ class _HomeScreenState extends State<HomeScreen> {
       const CartScreen(),
       const EditableProfileScreen(),
     ];
+    _seedDataIfNeeded();
+  }
+
+  // Seed initial data from MockData if Firebase is empty
+  Future<void> _seedDataIfNeeded() async {
+    if (!_hasSeeded) {
+      _hasSeeded = true;
+      await _menuService.seedMenuItems(MockData.allItems);
+    }
   }
 
   @override
@@ -56,8 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHomeContent() {
-    final filteredItems = MockData.getItemsByCategory(_selectedCategory);
-
     return SafeArea(
       child: Column(
         children: [
@@ -118,6 +130,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
+                    // Admin Panel button
+                    IconButton(
+                      icon: const Icon(Icons.admin_panel_settings,
+                          color: AppTheme.primaryGreen),
+                      tooltip: 'Admin Panel',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const AdminPanelScreen()),
+                        );
+                      },
+                    ),
                     IconButton(
                       icon: const Icon(Icons.notifications_outlined),
                       onPressed: () {},
@@ -177,6 +202,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () {
                       setState(() {
                         _selectedCategory = category;
+                        // Rebuild the home content screen
+                        _screens[0] = _buildHomeContent();
                       });
                     },
                   ),
@@ -208,19 +235,61 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Food items grid
+          // 🔥 Food items grid — powered by Firebase StreamBuilder
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: filteredItems.length,
-              itemBuilder: (context, index) {
-                return FoodItemCard(item: filteredItems[index]);
+            child: StreamBuilder<List<FoodItem>>(
+              stream: _menuService.menuItemsByCategoryStream(_selectedCategory),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.error_outline,
+                            size: 48, color: Colors.red),
+                        const SizedBox(height: 8),
+                        Text('Error loading items',
+                            style: TextStyle(color: Colors.grey.shade600)),
+                      ],
+                    ),
+                  );
+                }
+
+                final items = snapshot.data ?? [];
+
+                if (items.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.restaurant_menu,
+                            size: 48, color: Colors.grey.shade400),
+                        const SizedBox(height: 8),
+                        Text('No items in this category',
+                            style: TextStyle(color: Colors.grey.shade600)),
+                      ],
+                    ),
+                  );
+                }
+
+                return GridView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.75,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    return FoodItemCard(item: items[index]);
+                  },
+                );
               },
             ),
           ),
