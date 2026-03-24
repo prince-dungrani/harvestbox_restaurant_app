@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import '../widgets/custom_button.dart';
 import '../services/location_service.dart';
 import 'home_screen.dart';
+import 'map_picker_screen.dart';
 
 class LocationScreen extends StatefulWidget {
   const LocationScreen({super.key});
@@ -198,6 +199,47 @@ class _LocationScreenState extends State<LocationScreen> {
                   text: _isLoading ? 'Getting Location...' : 'Use Current Location',
                   icon: Icons.navigation,
                   onPressed: _isLoading ? null : _handleUseCurrentLocation,
+                ),
+
+                const SizedBox(height: 10),
+
+                // Pick on Map button
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final address = await Navigator.push<String>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const MapPickerScreen(),
+                        ),
+                      );
+                      if (address != null && address.isNotEmpty && mounted) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HomeScreen(location: address),
+                          ),
+                          (route) => false,
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.map, color: AppTheme.primaryGreen),
+                    label: const Text(
+                      'Pick on Map',
+                      style: TextStyle(
+                        color: AppTheme.primaryGreen,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppTheme.primaryGreen),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 10),
