@@ -52,6 +52,12 @@ dependencies:
   # 💾 Session Persistence
   shared_preferences: ^2.2.2
 
+  # 🔔 Local Notifications
+  flutter_local_notifications: ^17.0.0
+
+  # 📨 Firebase Cloud Messaging
+  firebase_messaging: ^14.7.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

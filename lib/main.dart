@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 import 'services/cart_service.dart';
+import 'services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,9 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // 🔔 Initialize Notifications (local + FCM)
+  await NotificationService().initialize();
 
   // Set status bar color
   SystemChrome.setSystemUIOverlayStyle(

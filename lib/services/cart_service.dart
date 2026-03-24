@@ -5,6 +5,7 @@ import '../models/food_item.dart';
 import '../models/order.dart';
 import '../models/order_item.dart';
 import '../services/order_service.dart';
+import '../services/notification_service.dart';
 
 class CartService extends ChangeNotifier {
   final List<CartItem> _items = [];
@@ -120,6 +121,14 @@ class CartService extends ChangeNotifier {
 
     // Save to Firebase
     final orderId = await _orderService.createOrder(order);
+
+    // 🔔 Trigger local notification on successful order
+    if (orderId != null) {
+      final notificationService = NotificationService();
+      await notificationService.showOrderPlacedNotification(orderId);
+      // Schedule a reminder for later
+      notificationService.scheduleReminderNotification();
+    }
 
     // Clear cart after successful checkout
     clearCart();
