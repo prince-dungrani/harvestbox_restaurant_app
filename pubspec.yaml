@@ -46,6 +46,9 @@ dependencies:
   # 📅 Date Formatting
   intl: ^0.19.0
 
+  # 🌐 HTTP Client for REST API
+  http: ^1.2.0
+
   # 💾 Session Persistence
   shared_preferences: ^2.2.2
 

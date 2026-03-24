@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
+import '../models/meal_api_model.dart';
+import '../services/api_service.dart';
 import '../widgets/category_card.dart';
 import '../widgets/filter_chip_widget.dart';
 import 'category_screen.dart';
@@ -15,6 +17,9 @@ class DiscoverScreen extends StatefulWidget {
 class _DiscoverScreenState extends State<DiscoverScreen> {
   String _selectedFilter = 'Nearby';
   final List<String> _filters = ['Nearby', 'Under 30 mins', 'Top Rated'];
+  final ApiService _apiService = ApiService();
+
+  late Future<List<MealApiModel>> _suggestedMealsFuture;
 
   final Map<String, String> _categoryImages = {
     'Pizza': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400',
@@ -22,6 +27,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     'Salads': 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400',
     'Desserts': 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400',
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _suggestedMealsFuture = _apiService.searchMeals('chicken');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,6 +132,117 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // ══════════════════════════════════════════
+                    // 🌐 SUGGESTED FOR YOU — TheMealDB API
+                    // ══════════════════════════════════════════
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            '🌍 Suggested for You',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.refresh,
+                                color: AppTheme.primaryGreen),
+                            onPressed: () {
+                              setState(() {
+                                _suggestedMealsFuture =
+                                    _apiService.getRandomMeals(count: 6);
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // FutureBuilder for API data
+                    FutureBuilder<List<MealApiModel>>(
+                      future: _suggestedMealsFuture,
+                      builder: (context, snapshot) {
+                        // ⏳ Loading state
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const SizedBox(
+                            height: 180,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppTheme.primaryGreen,
+                              ),
+                            ),
+                          );
+                        }
+
+                        // ❌ Error state
+                        if (snapshot.hasError) {
+                          return Container(
+                            height: 120,
+                            margin: const EdgeInsets.symmetric(horizontal: 20),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.wifi_off,
+                                      color: Colors.red, size: 32),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Failed to load suggestions',
+                                    style:
+                                        TextStyle(color: Colors.red.shade700),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _suggestedMealsFuture = _apiService
+                                            .searchMeals('chicken');
+                                      });
+                                    },
+                                    child: const Text('Retry'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
+                        // ✅ Success state
+                        final meals = snapshot.data ?? [];
+                        if (meals.isEmpty) {
+                          return const SizedBox(
+                            height: 100,
+                            child: Center(
+                                child: Text('No suggestions available')),
+                          );
+                        }
+
+                        return SizedBox(
+                          height: 200,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            itemCount: meals.length,
+                            itemBuilder: (context, index) {
+                              final meal = meals[index];
+                              return _buildMealSuggestionCard(meal);
+                            },
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
                     // Trending Categories
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
@@ -140,7 +262,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                       child: GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
@@ -156,7 +279,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => CategoryScreen(category: category),
+                                  builder: (_) =>
+                                      CategoryScreen(category: category),
                                 ),
                               );
                             },
@@ -230,8 +354,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                     child: Image.network(
                                       item.image,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return const Icon(Icons.restaurant, size: 40);
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return const Icon(Icons.restaurant,
+                                            size: 40);
                                       },
                                     ),
                                   ),
@@ -242,11 +368,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                   child: Padding(
                                     padding: const EdgeInsets.all(12),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               item.name,
@@ -268,15 +397,19 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                           ],
                                         ),
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Row(
                                               children: [
-                                                const Icon(Icons.star, color: Colors.amber, size: 16),
+                                                const Icon(Icons.star,
+                                                    color: Colors.amber,
+                                                    size: 16),
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   '${item.rating} (${item.reviewCount}+)',
-                                                  style: const TextStyle(fontSize: 12),
+                                                  style: const TextStyle(
+                                                      fontSize: 12),
                                                 ),
                                               ],
                                             ),
@@ -325,6 +458,94 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ── Meal suggestion card from API ──
+  Widget _buildMealSuggestionCard(MealApiModel meal) {
+    return Container(
+      width: 160,
+      margin: const EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Thumbnail
+          ClipRRect(
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(16)),
+            child: Image.network(
+              '${meal.thumbnail}/preview',
+              height: 110,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return Container(
+                  height: 110,
+                  color: Colors.grey.shade200,
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                );
+              },
+              errorBuilder: (_, __, ___) => Container(
+                height: 110,
+                color: Colors.grey.shade200,
+                child: const Icon(Icons.restaurant, size: 40),
+              ),
+            ),
+          ),
+
+          // Info
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  meal.name,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.location_on,
+                        size: 12, color: Colors.grey.shade500),
+                    const SizedBox(width: 2),
+                    Expanded(
+                      child: Text(
+                        meal.area.isNotEmpty ? meal.area : meal.category,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
