@@ -66,8 +66,16 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/premium_high_fidelity_app_icon_for_harvestbox_food_delivery._a_minimalist_design_featuring_a_white_negative_space_chef_s_hat_toque_with_a_single_green_leaf_as_an_accent_set_against_a_vibrant_green_circular_backgro.png"
+  min_sdk_android: 21
   assets:
     - assets/images/

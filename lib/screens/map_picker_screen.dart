@@ -65,7 +65,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
         Marker(
           markerId: const MarkerId('selected_location'),
           position: position,
-          icon: BitmapDescriptor.defaultMarkerHue(BitmapDescriptor.hueGreen),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
           infoWindow: const InfoWindow(title: 'Delivery Location'),
         ),
       );
@@ -74,7 +74,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
         Marker(
           markerId: const MarkerId('restaurant'),
           position: _restaurantLocation,
-          icon: BitmapDescriptor.defaultMarkerHue(BitmapDescriptor.hueOrange),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
           infoWindow: const InfoWindow(title: 'HarvestBox Restaurant'),
         ),
       );
